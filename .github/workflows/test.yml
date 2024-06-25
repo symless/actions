@@ -15,7 +15,19 @@ jobs:
         env:
           ACTIONS_RUNNER_DEBUG: true
         with:
-          current-version: 1.2.3
+          current-version: 1.0.0
 
       - name: Print result
         run: echo "${{ steps.test.outputs.next-version }}"
+
+      - name: Create release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.test.outputs.next-version }}
+          release_name: ${{ steps.test.outputs.next-version }}
+          commitish: master
+          draft: false
+          prerelease: true
