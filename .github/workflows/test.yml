@@ -18,7 +18,7 @@ jobs:
         env:
           ACTIONS_RUNNER_DEBUG: true
         with:
-          current-version: 1.0.0
+          current-version: 1.0.1
 
       - name: Print result
         run: echo "${{ steps.test.outputs.next-version }}"
