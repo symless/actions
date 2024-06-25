@@ -1,0 +1,19 @@
+name: Test action
+
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Test action
+        id: test
+        uses: ./
+        with:
+          current-version: 1.2.3
+
+      - name: Print result
+        run: echo "${{ steps.test.outputs.result }}"
