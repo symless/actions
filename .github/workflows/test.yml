@@ -16,7 +16,7 @@ jobs:
         id: test
         uses: ./
         with:
-          current-version: 1.0.3
+          current-version: 1.0.4
 
       - name: Print result
         run: echo "${{ steps.test.outputs.next-version }}"

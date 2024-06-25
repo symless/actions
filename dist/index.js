@@ -15,14 +15,14 @@ class Version {
     major;
     minor;
     patch;
-    build;
     stage;
-    constructor(major, minor, patch, build, stage) {
+    build;
+    constructor(major, minor, patch, stage, build) {
         this.major = major;
         this.minor = minor;
         this.patch = patch;
-        this.build = build;
         this.stage = stage;
+        this.build = build;
     }
     static getExisting() {
         const tags = (0, git_1.getRepoTags)();
@@ -39,11 +39,11 @@ class Version {
         return mapped.filter(Boolean);
     }
     static parseStage(metadata) {
-        const stage = /(.*)\+?/.exec(metadata);
+        const stage = /^-(\w+)/.exec(metadata);
         return stage ? stage[1] : null;
     }
     static parseBuildNumber(metadata) {
-        const build = /build-(\d+)/.exec(metadata);
+        const build = /\+build-(\d+)/.exec(metadata);
         return build ? Number.parseInt(build[1]) : null;
     }
     static parseMetadata(metadata) {
@@ -68,15 +68,18 @@ class Version {
             const major = Number.parseInt(semverMatch[1]);
             const minor = Number.parseInt(semverMatch[2]);
             const patch = Number.parseInt(semverMatch[3]);
-            const { build, stage } = this.parseMetadata(semverMatch[5] || null);
-            return new Version(major, minor, patch, build, stage);
+            const { stage, build } = this.parseMetadata(semverMatch[4] || null);
+            return new Version(major, minor, patch, stage, build);
         }
         throw new Error(`Invalid version number: ${versionText}`);
     }
-    incrementBuild() {
+    updateBuildNumber() {
         const firstBuild = 1;
         const existing = Version.getExisting();
         const strings = new Set(existing.map((v) => v.toString()));
+        if (this.build == null) {
+            this.build = firstBuild;
+        }
         let iterations = 0;
         const maxIterations = 1000;
         while (strings.has(this.toString())) {
@@ -26994,10 +26997,10 @@ const Version_1 = __nccwpck_require__(7017);
 const currentVersionKey = "current-version";
 const nextVersionKey = "next-version";
 async function main() {
-    const currentVersionText = (0, core_1.getInput)(currentVersionKey);
+    const currentVersionText = process.env.INPUT_CURRENT_VERSION ?? (0, core_1.getInput)(currentVersionKey);
     (0, core_1.debug)(`${currentVersionKey}: ${currentVersionText}`);
     const version = Version_1.Version.fromString(currentVersionText);
-    version.incrementBuild();
+    version.updateBuildNumber();
     const nextVersionText = version.toString();
     (0, core_1.debug)(`${nextVersionKey}: ${nextVersionText}`);
     (0, core_1.setOutput)(nextVersionKey, nextVersionText);
