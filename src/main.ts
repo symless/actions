@@ -6,7 +6,7 @@ const currentVersionKey = "current-version";
 const nextVersionKey = "next-version";
 
 async function main(): Promise<void> {
-  const currentVersionText = getInput(currentVersionKey);
+  const currentVersionText = process.env.INPUT_CURRENT_VERSION ?? getInput(currentVersionKey);
   debug(`${currentVersionKey}: ${currentVersionText}`);
 
   const version = Version.fromString(currentVersionText);

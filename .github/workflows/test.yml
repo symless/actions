@@ -15,8 +15,6 @@ jobs:
       - name: Test action
         id: test
         uses: ./
-        env:
-          ACTIONS_RUNNER_DEBUG: true
         with:
           current-version: 1.0.2
 
