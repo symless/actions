@@ -2,21 +2,19 @@ import { error, warning } from "@actions/core";
 import { getRepoTags } from "./git";
 import { errorRecursive } from "./utils";
 
-const firstBuild = 1;
-
 export class Version {
   major: number;
   minor: number;
   patch: number;
-  build?: number | null;
   stage?: string | null;
+  build?: number | null;
 
   constructor(
     major: number,
     minor: number,
     patch: number,
-    build?: number | null,
     stage?: string | null,
+    build?: number | null,
   ) {
     this.major = major;
     this.minor = minor;
@@ -76,14 +74,15 @@ export class Version {
       const major = Number.parseInt(semverMatch[1]);
       const minor = Number.parseInt(semverMatch[2]);
       const patch = Number.parseInt(semverMatch[3]);
-      const { build, stage } = this.parseMetadata(semverMatch[4] || null);
-      return new Version(major, minor, patch, build, stage);
+      const { stage, build } = this.parseMetadata(semverMatch[4] || null);
+      return new Version(major, minor, patch, stage, build);
     }
 
     throw new Error(`Invalid version number: ${versionText}`);
   }
 
-  incrementBuild() {
+  updateBuildNumber() {
+    const firstBuild = 1;
     const existing = Version.getExisting();
     const strings = new Set(existing.map((v) => v.toString()));
 

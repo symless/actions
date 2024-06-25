@@ -1,6 +1,6 @@
-import { debug, getInput, setFailed, setOutput } from "@actions/core";
-import { errorRecursive } from "./utils";
+import { getInput, setOutput } from "@actions/core";
 import { Version } from "./Version";
+import { errorRecursive } from "./utils";
 
 jest.mock("@actions/core");
 jest.mock("./utils");
@@ -16,7 +16,7 @@ describe("main", () => {
     jest.isolateModulesAsync(async () => {
       getInputMock.mockReturnValue("test");
       versionFromStringMock.mockReturnValueOnce({
-        incrementBuild: jest.fn(),
+        updateBuildNumber: jest.fn(),
         toString: () => "test",
       } as any);
 

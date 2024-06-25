@@ -10,7 +10,7 @@ async function main(): Promise<void> {
   debug(`${currentVersionKey}: ${currentVersionText}`);
 
   const version = Version.fromString(currentVersionText);
-  version.incrementBuild();
+  version.updateBuildNumber();
 
   const nextVersionText = version.toString();
   debug(`${nextVersionKey}: ${nextVersionText}`);

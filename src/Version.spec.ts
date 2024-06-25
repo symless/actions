@@ -83,32 +83,50 @@ describe("Version", () => {
 
   describe("toString", () => {
     it("formats a semver string with a stage and build", () => {
-      const version = new Version(1, 2, 3, 4, "foobar");
-      expect(version.toString()).toEqual("1.2.3-foobar+build-4");
+      const version = new Version(1, 2, 3, "foobar", 1);
+      expect(version.toString()).toEqual("1.2.3-foobar+build-1");
     });
 
     it("formats a semver string without a stage and build", () => {
-      const version = new Version(1, 2, 3, null, null);
+      const version = new Version(1, 2, 3);
       expect(version.toString()).toEqual("1.2.3");
     });
 
     it("formats a semver string without a stage", () => {
-      const version = new Version(1, 2, 3, 4, null);
-      expect(version.toString()).toEqual("1.2.3+build-4");
+      const version = new Version(1, 2, 3, null, 1);
+      expect(version.toString()).toEqual("1.2.3+build-1");
     });
 
     it("formats a semver string without a build", () => {
-      const version = new Version(1, 2, 3, null, "foobar");
+      const version = new Version(1, 2, 3, "foobar");
       expect(version.toString()).toEqual("1.2.3-foobar");
     });
   });
 
-  describe("incrementBuild", () => {
-    it("updates to the next build version", () => {
+  describe("updateBuildNumber", () => {
+    it("uses the first the build number", () => {
+      getRepoTagsMock.mockReturnValue([]);
+      const version = new Version(1, 2, 3);
+
+      version.updateBuildNumber();
+
+      expect(version.build).toEqual(1);
+    });
+
+    it("increments the build number to 2 when build number set", () => {
+      getRepoTagsMock.mockReturnValue(["1.2.3+build-1"]);
+      const version = new Version(1, 2, 3, null, 1);
+
+      version.updateBuildNumber();
+
+      expect(version.build).toEqual(2);
+    });
+
+    it("increments the build number to 3 when two exist", () => {
       getRepoTagsMock.mockReturnValue(["1.2.3+build-1", "1.2.3+build-2"]);
       const version = new Version(1, 2, 3);
 
-      version.incrementBuild();
+      version.updateBuildNumber();
 
       expect(version.build).toEqual(3);
     });
