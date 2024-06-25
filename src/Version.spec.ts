@@ -29,13 +29,13 @@ describe("Version", () => {
       });
     });
 
-    it("parses a semver string with an extended stage", () => {
+    it("parses a semver string with stage and extra metadata", () => {
       const version = Version.fromString("1.2.3-foo+bar");
       expect(version).toEqual({
         major: 1,
         minor: 2,
         patch: 3,
-        stage: "foo+bar",
+        stage: "foo",
         build: null,
       });
     });

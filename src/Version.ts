@@ -2,6 +2,8 @@ import { error, warning } from "@actions/core";
 import { getRepoTags } from "./git";
 import { errorRecursive } from "./utils";
 
+const firstBuild = 1;
+
 export class Version {
   major: number;
   minor: number;
@@ -19,8 +21,8 @@ export class Version {
     this.major = major;
     this.minor = minor;
     this.patch = patch;
-    this.build = build;
     this.stage = stage;
+    this.build = build;
   }
 
   private static getExisting(): Version[] {
@@ -38,12 +40,12 @@ export class Version {
   }
 
   private static parseStage(metadata: string): string | null {
-    const stage = /(.*)\+?/.exec(metadata);
+    const stage = /^-(\w+)/.exec(metadata);
     return stage ? stage[1] : null;
   }
 
   private static parseBuildNumber(metadata: string): number | null {
-    const build = /build-(\d+)/.exec(metadata);
+    const build = /\+build-(\d+)/.exec(metadata);
     return build ? Number.parseInt(build[1]) : null;
   }
 
@@ -74,7 +76,7 @@ export class Version {
       const major = Number.parseInt(semverMatch[1]);
       const minor = Number.parseInt(semverMatch[2]);
       const patch = Number.parseInt(semverMatch[3]);
-      const { build, stage } = this.parseMetadata(semverMatch[5] || null);
+      const { build, stage } = this.parseMetadata(semverMatch[4] || null);
       return new Version(major, minor, patch, build, stage);
     }
 
@@ -82,9 +84,12 @@ export class Version {
   }
 
   incrementBuild() {
-    const firstBuild = 1;
     const existing = Version.getExisting();
     const strings = new Set(existing.map((v) => v.toString()));
+
+    if (this.build == null) {
+      this.build = firstBuild;
+    }
 
     let iterations = 0;
     const maxIterations = 1000;
