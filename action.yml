@@ -1,0 +1,15 @@
+name: "Next version"
+description: "Get the next version number in a Git repo"
+
+inputs:
+  current-version:
+    description: "The current version string"
+    required: true
+
+outputs:
+  next-version:
+    description: "The version string with a unique build number"
+
+runs:
+  using: "node20"
+  main: "dist/index.js"
