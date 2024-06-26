@@ -13,7 +13,7 @@ async function main(): Promise<void> {
   const revisionPrefix = process.env.INPUT_REVISION_PREFIX ?? getInput(revisionPrefixKey);
   debug(`${revisionPrefixKey}: ${revisionPrefix}`);
 
-  const version = Version.fromString(currentVersion);
+  const version = Version.fromString(currentVersion, revisionPrefix);
   version.updateRevision(revisionPrefix);
 
   const nextVersion = version.toString();
