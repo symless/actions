@@ -15,7 +15,7 @@ describe("Version", () => {
         patch: 3,
         stage: null,
         revision: null,
-        revisionText: "r",
+        revisionPrefix: null,
       });
     });
 
@@ -27,7 +27,7 @@ describe("Version", () => {
         patch: 3,
         stage: "foobar",
         revision: null,
-        revisionText: "r",
+        revisionPrefix: null,
       });
     });
 
@@ -39,7 +39,7 @@ describe("Version", () => {
         patch: 3,
         stage: "foo",
         revision: null,
-        revisionText: "bar",
+        revisionPrefix: "bar",
       });
     });
 
@@ -52,7 +52,7 @@ describe("Version", () => {
         patch: 3,
         stage: "foobar",
         revision: 4,
-        revisionText: "r",
+        revisionPrefix: "r",
       });
     });
 
@@ -65,7 +65,7 @@ describe("Version", () => {
         patch: 3,
         stage: "foobar",
         revision: 4,
-        revisionText: "r",
+        revisionPrefix: "r",
       });
     });
 
@@ -78,7 +78,7 @@ describe("Version", () => {
         patch: 3,
         stage: null,
         revision: 4,
-        revisionText: "r",
+        revisionPrefix: "r",
       });
     });
 
@@ -89,7 +89,7 @@ describe("Version", () => {
 
   describe("toString", () => {
     it("formats a semver string with a stage and revision", () => {
-      const version = new Version(1, 2, 3, "foobar", 1);
+      const version = new Version(1, 2, 3, "foobar", 1, "r");
       expect(version.toString()).toEqual("1.2.3-foobar+r1");
     });
 
@@ -99,7 +99,7 @@ describe("Version", () => {
     });
 
     it("formats a semver string without a stage", () => {
-      const version = new Version(1, 2, 3, null, 1);
+      const version = new Version(1, 2, 3, null, 1, "r");
       expect(version.toString()).toEqual("1.2.3+r1");
     });
 
@@ -114,25 +114,25 @@ describe("Version", () => {
       getRepoTagsMock.mockReturnValue([]);
       const version = new Version(1, 2, 3);
 
-      version.updateRevision();
+      version.updateRevision("r");
 
       expect(version.revision).toEqual(1);
     });
 
     it("increments the revision number to 2 when revision number set", () => {
       getRepoTagsMock.mockReturnValue(["1.2.3+r1"]);
-      const version = new Version(1, 2, 3, null, 1);
+      const version = new Version(1, 2, 3, null, 1, "r");
 
-      version.updateRevision();
+      version.updateRevision("r");
 
       expect(version.revision).toEqual(2);
     });
 
     it("increments the revision number to 3 when two exist", () => {
       getRepoTagsMock.mockReturnValue(["1.2.3+r1", "1.2.3+r2"]);
-      const version = new Version(1, 2, 3);
+      const version = new Version(1, 2, 3, null, null, "r");
 
-      version.updateRevision();
+      version.updateRevision("r");
 
       expect(version.revision).toEqual(3);
     });

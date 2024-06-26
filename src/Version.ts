@@ -1,4 +1,4 @@
-import { error, warning } from "@actions/core";
+import { warning } from "@actions/core";
 import { getRepoTags } from "./git";
 import { errorRecursive } from "./utils";
 
@@ -8,7 +8,7 @@ export class Version {
   patch: number;
   stage?: string | null;
   revision?: number | null;
-  revisionText = "r";
+  revisionPrefix?: string | null;
 
   constructor(
     major: number,
@@ -16,24 +16,21 @@ export class Version {
     patch: number,
     stage?: string | null,
     revision?: number | null,
-    revisionText?: string | null,
+    revisionPrefix?: string | null,
   ) {
     this.major = major;
     this.minor = minor;
     this.patch = patch;
     this.stage = stage;
     this.revision = revision;
-
-    if (revisionText) {
-      this.revisionText = revisionText;
-    }
+    this.revisionPrefix = revisionPrefix;
   }
 
-  private static getExisting(): Version[] {
+  private static getExisting(defaultRevisionPrefix: string): Version[] {
     const tags = getRepoTags();
     const mapped = tags.map((s) => {
       try {
-        return Version.fromString(s);
+        return Version.fromString(s, defaultRevisionPrefix);
       } catch (e) {
         errorRecursive(e);
         warning(`Ignoring invalid tag: ${s}`);
@@ -50,10 +47,10 @@ export class Version {
 
   private static parseMetadata(extra: string) {
     const match = /\+(.*?)(\d*)$/.exec(extra);
-    const revisionText = match ? match[1] : null;
+    const revisionPrefix = match ? match[1] : null;
     const revisionParsed = match ? Number.parseInt(match[2]) : null;
     const revision = Number.isNaN(revisionParsed) ? null : revisionParsed;
-    return { revision, revisionText };
+    return { revision, revisionPrefix };
   }
 
   private static parseExtra(text: string | null) {
@@ -63,23 +60,30 @@ export class Version {
 
     const stage = Version.parseStage(text);
     const metadata = Version.parseMetadata(text);
-    const { revision, revisionText } = metadata;
-    return { stage, revision, revisionText };
+    const { revision, revisionPrefix } = metadata;
+    return { stage, revision, revisionPrefix };
   }
 
   /**
    * Parses a valid semver string with at least the major, minor, and patch.
    * The stage and revision are optional.
    */
-  static fromString(versionText: string) {
+  static fromString(versionText: string, defaultRevisionPrefix?: string) {
     const semverRe = /(\d+)\.(\d+)\.(\d+)(.*)/;
     const semverMatch = semverRe.exec(versionText);
     if (semverMatch) {
       const major = Number.parseInt(semverMatch[1]);
       const minor = Number.parseInt(semverMatch[2]);
       const patch = Number.parseInt(semverMatch[3]);
-      const { stage, revision, revisionText } = this.parseExtra(semverMatch[4] || null);
-      return new Version(major, minor, patch, stage, revision, revisionText);
+      const { stage, revision, revisionPrefix } = this.parseExtra(semverMatch[4] || null);
+      return new Version(
+        major,
+        minor,
+        patch,
+        stage,
+        revision,
+        revisionPrefix ?? defaultRevisionPrefix ?? null,
+      );
     }
 
     throw new Error(`Invalid version number: ${versionText}`);
@@ -89,9 +93,9 @@ export class Version {
    * Update the revision number to be unique based on existing tags.
    * The revision will only be incremented if it is not already unique.
    */
-  updateRevision() {
+  updateRevision(defaultRevisionPrefix: string) {
     const firstRevision = 1;
-    const existing = Version.getExisting();
+    const existing = Version.getExisting(defaultRevisionPrefix);
     const strings = new Set(existing.map((v) => v.toString()));
 
     if (this.revision == null) {
@@ -123,7 +127,7 @@ export class Version {
     }
 
     if (this.revision != null) {
-      versionString += `+${this.revisionText}${this.revision}`;
+      versionString += `+${this.revisionPrefix ?? ""}${this.revision}`;
     }
 
     return versionString;

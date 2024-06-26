@@ -3,18 +3,22 @@ import { errorRecursive } from "./utils";
 import { Version } from "./Version";
 
 const currentVersionKey = "current-version";
+const revisionPrefixKey = "revision-prefix";
 const nextVersionKey = "next-version";
 
 async function main(): Promise<void> {
-  const currentVersionText = process.env.INPUT_CURRENT_VERSION ?? getInput(currentVersionKey);
-  debug(`${currentVersionKey}: ${currentVersionText}`);
+  const currentVersion = process.env.INPUT_CURRENT_VERSION ?? getInput(currentVersionKey);
+  debug(`${currentVersionKey}: ${currentVersion}`);
 
-  const version = Version.fromString(currentVersionText);
-  version.updateRevision();
+  const revisionPrefix = process.env.INPUT_REVISION_PREFIX ?? getInput(revisionPrefixKey);
+  debug(`${revisionPrefixKey}: ${revisionPrefix}`);
 
-  const nextVersionText = version.toString();
-  debug(`${nextVersionKey}: ${nextVersionText}`);
-  setOutput(nextVersionKey, nextVersionText);
+  const version = Version.fromString(currentVersion);
+  version.updateRevision(revisionPrefix);
+
+  const nextVersion = version.toString();
+  debug(`${nextVersionKey}: ${nextVersion}`);
+  setOutput(nextVersionKey, nextVersion);
 }
 
 main().catch((error) => {

@@ -6,6 +6,10 @@ inputs:
     description: "The current version string"
     required: true
 
+  revision-prefix:
+    description: "The prefix for the revision number, defaults to 'r'"
+    default: "r"
+
 outputs:
   next-version:
     description: "A version string with a unique revision number"
