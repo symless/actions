@@ -16,19 +16,21 @@ class Version {
     minor;
     patch;
     stage;
-    build;
-    constructor(major, minor, patch, stage, build) {
+    revision;
+    revisionPrefix;
+    constructor(major, minor, patch, stage, revision, revisionPrefix) {
         this.major = major;
         this.minor = minor;
         this.patch = patch;
         this.stage = stage;
-        this.build = build;
+        this.revision = revision;
+        this.revisionPrefix = revisionPrefix;
     }
-    static getExisting() {
+    static getExisting(defaultRevisionPrefix) {
         const tags = (0, git_1.getRepoTags)();
         const mapped = tags.map((s) => {
             try {
-                return Version.fromString(s);
+                return Version.fromString(s, defaultRevisionPrefix);
             }
             catch (e) {
                 (0, utils_1.errorRecursive)(e);
@@ -38,47 +40,52 @@ class Version {
         });
         return mapped.filter(Boolean);
     }
-    static parseStage(metadata) {
-        const stage = /^-(\w+)/.exec(metadata);
-        return stage ? stage[1] : null;
+    static parseStage(extra) {
+        const match = /^-(\w+)/.exec(extra);
+        return match ? match[1] : null;
     }
-    static parseBuildNumber(metadata) {
-        const build = /\+build-(\d+)/.exec(metadata);
-        return build ? Number.parseInt(build[1]) : null;
+    static parseMetadata(extra) {
+        const match = /\+(.*?)(\d*)$/.exec(extra);
+        const revisionPrefix = match ? match[1] : null;
+        const revisionParsed = match ? Number.parseInt(match[2]) : null;
+        const revision = Number.isNaN(revisionParsed) ? null : revisionParsed;
+        return { revision, revisionPrefix };
     }
-    static parseMetadata(metadata) {
-        if (!metadata) {
-            return { build: null, stage: null };
+    static parseExtra(text) {
+        if (!text) {
+            return { revision: null, stage: null };
         }
-        const stage = Version.parseStage(metadata);
-        const build = Version.parseBuildNumber(metadata);
-        return { build, stage };
+        const stage = Version.parseStage(text);
+        const metadata = Version.parseMetadata(text);
+        const { revision, revisionPrefix } = metadata;
+        return { stage, revision, revisionPrefix };
     }
     /**
-     * Note: This will only match the current format that ends with "+build-[n]"
-     *
-     * @param string Valid semver (1.2.3-foobar+build-4)
-     * @param assertValid If `true`, throw an error if the version is invalid
+     * Parses a valid semver string with at least the major, minor, and patch.
+     * The stage and revision are optional.
      */
-    static fromString(versionText) {
-        // matches 1.2.3, 1.2.3-foobar, 1.2.3-foobar+build-4
+    static fromString(versionText, defaultRevisionPrefix) {
         const semverRe = /(\d+)\.(\d+)\.(\d+)(.*)/;
         const semverMatch = semverRe.exec(versionText);
         if (semverMatch) {
             const major = Number.parseInt(semverMatch[1]);
             const minor = Number.parseInt(semverMatch[2]);
             const patch = Number.parseInt(semverMatch[3]);
-            const { stage, build } = this.parseMetadata(semverMatch[4] || null);
-            return new Version(major, minor, patch, stage, build);
+            const { stage, revision, revisionPrefix } = this.parseExtra(semverMatch[4] || null);
+            return new Version(major, minor, patch, stage, revision, revisionPrefix ?? defaultRevisionPrefix ?? null);
         }
         throw new Error(`Invalid version number: ${versionText}`);
     }
-    updateBuildNumber() {
-        const firstBuild = 1;
-        const existing = Version.getExisting();
+    /**
+     * Update the revision number to be unique based on existing tags.
+     * The revision will only be incremented if it is not already unique.
+     */
+    updateRevision(defaultRevisionPrefix) {
+        const firstRevision = 1;
+        const existing = Version.getExisting(defaultRevisionPrefix);
         const strings = new Set(existing.map((v) => v.toString()));
-        if (this.build == null) {
-            this.build = firstBuild;
+        if (this.revision == null) {
+            this.revision = firstRevision;
         }
         let iterations = 0;
         const maxIterations = 1000;
@@ -86,22 +93,22 @@ class Version {
             if (iterations++ > maxIterations) {
                 throw new Error(`Exceeded max iterations (${maxIterations})`);
             }
-            this.build = this.build ? this.build + 1 : firstBuild;
+            this.revision = this.revision ? this.revision + 1 : firstRevision;
         }
     }
     /**
      * See: https://semver.org/
-     * > Build metadata MAY be denoted by appending a plus sign [...]
+     * > metadata MAY be denoted by appending a plus sign [...]
      *
-     * @returns Valid semver, e.g. 1.2.3-foobar+build-4
+     * @returns Valid semver, e.g. 1.2.3-foobar+r4
      */
     toString() {
         let versionString = `${this.major}.${this.minor}.${this.patch}`;
         if (this.stage) {
             versionString += `-${this.stage}`;
         }
-        if (this.build != null) {
-            versionString += `+build-${this.build}`;
+        if (this.revision != null) {
+            versionString += `+${this.revisionPrefix ?? ""}${this.revision}`;
         }
         return versionString;
     }
@@ -26995,15 +27002,18 @@ const core_1 = __nccwpck_require__(2186);
 const utils_1 = __nccwpck_require__(4140);
 const Version_1 = __nccwpck_require__(7017);
 const currentVersionKey = "current-version";
+const revisionPrefixKey = "revision-prefix";
 const nextVersionKey = "next-version";
 async function main() {
-    const currentVersionText = process.env.INPUT_CURRENT_VERSION ?? (0, core_1.getInput)(currentVersionKey);
-    (0, core_1.debug)(`${currentVersionKey}: ${currentVersionText}`);
-    const version = Version_1.Version.fromString(currentVersionText);
-    version.updateBuildNumber();
-    const nextVersionText = version.toString();
-    (0, core_1.debug)(`${nextVersionKey}: ${nextVersionText}`);
-    (0, core_1.setOutput)(nextVersionKey, nextVersionText);
+    const currentVersion = process.env.INPUT_CURRENT_VERSION ?? (0, core_1.getInput)(currentVersionKey);
+    (0, core_1.debug)(`${currentVersionKey}: ${currentVersion}`);
+    const revisionPrefix = process.env.INPUT_REVISION_PREFIX ?? (0, core_1.getInput)(revisionPrefixKey);
+    (0, core_1.debug)(`${revisionPrefixKey}: ${revisionPrefix}`);
+    const version = Version_1.Version.fromString(currentVersion);
+    version.updateRevision(revisionPrefix);
+    const nextVersion = version.toString();
+    (0, core_1.debug)(`${nextVersionKey}: ${nextVersion}`);
+    (0, core_1.setOutput)(nextVersionKey, nextVersion);
 }
 main().catch((error) => {
     (0, utils_1.errorRecursive)(error);
