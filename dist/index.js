@@ -27009,7 +27009,7 @@ async function main() {
     (0, core_1.debug)(`${currentVersionKey}: ${currentVersion}`);
     const revisionPrefix = process.env.INPUT_REVISION_PREFIX ?? (0, core_1.getInput)(revisionPrefixKey);
     (0, core_1.debug)(`${revisionPrefixKey}: ${revisionPrefix}`);
-    const version = Version_1.Version.fromString(currentVersion);
+    const version = Version_1.Version.fromString(currentVersion, revisionPrefix);
     version.updateRevision(revisionPrefix);
     const nextVersion = version.toString();
     (0, core_1.debug)(`${nextVersionKey}: ${nextVersion}`);
