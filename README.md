@@ -1,6 +1,7 @@
-# Get the next version number in a Git repo
+# Generate a unique version number
 
-GitHub custom action to get the next version number with build number based on tags.
+GitHub custom action to generate a unique version number by appending a revision number, 
+which increments sequentially higher than previous revisions in the Git tag list.
 
 ## Usage
 ```
@@ -9,7 +10,24 @@ steps:
     id: checkout
     uses: actions/checkout@v4
 
-  - name: Get next version number
-    id: version
-    uses: symless/next-version-action
+  - name: Get next version
+    id: test
+    uses: ./
+    with:
+      current-version: 1.0.4
+
+  - name: Print result
+    run: echo "${{ steps.test.outputs.next-version }}"
+
+  - name: Create release
+    id: create_release
+    uses: actions/create-release@v1
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    with:
+      tag_name: ${{ steps.test.outputs.next-version }}
+      release_name: ${{ steps.test.outputs.next-version }}
+      commitish: master
+      draft: false
+      prerelease: true
 ```

@@ -7,20 +7,26 @@ export class Version {
   minor: number;
   patch: number;
   stage?: string | null;
-  build?: number | null;
+  revision?: number | null;
+  revisionText = "r";
 
   constructor(
     major: number,
     minor: number,
     patch: number,
     stage?: string | null,
-    build?: number | null,
+    revision?: number | null,
+    revisionText?: string | null,
   ) {
     this.major = major;
     this.minor = minor;
     this.patch = patch;
     this.stage = stage;
-    this.build = build;
+    this.revision = revision;
+
+    if (revisionText) {
+      this.revisionText = revisionText;
+    }
   }
 
   private static getExisting(): Version[] {
@@ -37,57 +43,59 @@ export class Version {
     return mapped.filter(Boolean) as Version[];
   }
 
-  private static parseStage(metadata: string): string | null {
-    const stage = /^-(\w+)/.exec(metadata);
-    return stage ? stage[1] : null;
+  private static parseStage(extra: string): string | null {
+    const match = /^-(\w+)/.exec(extra);
+    return match ? match[1] : null;
   }
 
-  private static parseBuildNumber(metadata: string): number | null {
-    const build = /\+build-(\d+)/.exec(metadata);
-    return build ? Number.parseInt(build[1]) : null;
+  private static parseMetadata(extra: string) {
+    const match = /\+(.*?)(\d*)$/.exec(extra);
+    const revisionText = match ? match[1] : null;
+    const revisionParsed = match ? Number.parseInt(match[2]) : null;
+    const revision = Number.isNaN(revisionParsed) ? null : revisionParsed;
+    return { revision, revisionText };
   }
 
-  private static parseMetadata(metadata: string | null): {
-    build: number | null;
-    stage: string | null;
-  } {
-    if (!metadata) {
-      return { build: null, stage: null };
+  private static parseExtra(text: string | null) {
+    if (!text) {
+      return { revision: null, stage: null };
     }
 
-    const stage = Version.parseStage(metadata);
-    const build = Version.parseBuildNumber(metadata);
-    return { build, stage };
+    const stage = Version.parseStage(text);
+    const metadata = Version.parseMetadata(text);
+    const { revision, revisionText } = metadata;
+    return { stage, revision, revisionText };
   }
 
   /**
-   * Note: This will only match the current format that ends with "+build-[n]"
-   *
-   * @param string Valid semver (1.2.3-foobar+build-4)
-   * @param assertValid If `true`, throw an error if the version is invalid
+   * Parses a valid semver string with at least the major, minor, and patch.
+   * The stage and revision are optional.
    */
   static fromString(versionText: string) {
-    // matches 1.2.3, 1.2.3-foobar, 1.2.3-foobar+build-4
     const semverRe = /(\d+)\.(\d+)\.(\d+)(.*)/;
     const semverMatch = semverRe.exec(versionText);
     if (semverMatch) {
       const major = Number.parseInt(semverMatch[1]);
       const minor = Number.parseInt(semverMatch[2]);
       const patch = Number.parseInt(semverMatch[3]);
-      const { stage, build } = this.parseMetadata(semverMatch[4] || null);
-      return new Version(major, minor, patch, stage, build);
+      const { stage, revision, revisionText } = this.parseExtra(semverMatch[4] || null);
+      return new Version(major, minor, patch, stage, revision, revisionText);
     }
 
     throw new Error(`Invalid version number: ${versionText}`);
   }
 
-  updateBuildNumber() {
-    const firstBuild = 1;
+  /**
+   * Update the revision number to be unique based on existing tags.
+   * The revision will only be incremented if it is not already unique.
+   */
+  updateRevision() {
+    const firstRevision = 1;
     const existing = Version.getExisting();
     const strings = new Set(existing.map((v) => v.toString()));
 
-    if (this.build == null) {
-      this.build = firstBuild;
+    if (this.revision == null) {
+      this.revision = firstRevision;
     }
 
     let iterations = 0;
@@ -97,15 +105,15 @@ export class Version {
         throw new Error(`Exceeded max iterations (${maxIterations})`);
       }
 
-      this.build = this.build ? this.build + 1 : firstBuild;
+      this.revision = this.revision ? this.revision + 1 : firstRevision;
     }
   }
 
   /**
    * See: https://semver.org/
-   * > Build metadata MAY be denoted by appending a plus sign [...]
+   * > metadata MAY be denoted by appending a plus sign [...]
    *
-   * @returns Valid semver, e.g. 1.2.3-foobar+build-4
+   * @returns Valid semver, e.g. 1.2.3-foobar+r4
    */
   toString(): string {
     let versionString = `${this.major}.${this.minor}.${this.patch}`;
@@ -114,8 +122,8 @@ export class Version {
       versionString += `-${this.stage}`;
     }
 
-    if (this.build != null) {
-      versionString += `+build-${this.build}`;
+    if (this.revision != null) {
+      versionString += `+${this.revisionText}${this.revision}`;
     }
 
     return versionString;
