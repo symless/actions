@@ -11,7 +11,7 @@ steps:
     uses: actions/checkout@v4
 
   - name: Get next version
-    id: next-action
+    id: next-version
     uses: symless/actions/next-version@master
     with:
       current-version: 1.2.3
