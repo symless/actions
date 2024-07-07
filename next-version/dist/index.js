@@ -27014,7 +27014,7 @@ async function main() {
     (0, core_1.debug)(`${revisionPrefixKey}: ${revisionPrefix}`);
     const overrideStage = process.env.INPUT_OVERRIDE_STAGE ?? (0, core_1.getInput)(overrideStageKey);
     (0, core_1.debug)(`${overrideStageKey}: ${overrideStage}`);
-    const version = Version_1.Version.fromString(currentVersion, revisionPrefix, overrideStage);
+    const version = Version_1.Version.fromString(currentVersion, revisionPrefix || null, overrideStage || null);
     version.updateRevision(revisionPrefix);
     const nextVersion = version.toString();
     (0, core_1.debug)(`${nextVersionKey}: ${nextVersion}`);
