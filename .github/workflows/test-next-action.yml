@@ -12,14 +12,14 @@ jobs:
           # Fetch all tags
           fetch-depth: 0
 
-      - name: Test action
-        id: test
+      - name: Next action
+        id: next-action
         uses: symless/actions/next-version@master
         with:
           current-version: 1.2.3
 
       - name: Print result
-        run: echo "${{ steps.test.outputs.next-version }}"
+        run: echo "${{ steps.next-action.outputs.next-version }}"
 
       - name: Create release
         id: create_release
@@ -27,8 +27,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ steps.test.outputs.next-version }}
-          release_name: ${{ steps.test.outputs.next-version }}
+          tag_name: ${{ steps.next-action.outputs.next-version }}
+          release_name: ${{ steps.next-action.outputs.next-version }}
           commitish: master
           draft: false
           prerelease: true

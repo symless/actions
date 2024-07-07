@@ -1,4 +1,4 @@
-# Generate a unique version number
+# `next-action` - Generate a unique version number
 
 GitHub custom action to generate a unique version number by appending a revision number, 
 which increments sequentially higher than previous revisions in the Git tag list.
@@ -11,10 +11,10 @@ steps:
     uses: actions/checkout@v4
 
   - name: Get next version
-    id: test
-    uses: ./
+    id: next-action
+    uses: symless/actions/next-version@master
     with:
-      current-version: 1.0.4
+      current-version: 1.2.3
 
   - name: Print result
     run: echo "${{ steps.test.outputs.next-version }}"
