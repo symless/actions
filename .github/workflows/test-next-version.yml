@@ -12,6 +12,12 @@ jobs:
           # Fetch all tags
           fetch-depth: 0
 
+      - name: Install dependencies
+        run: cd next-version; npm ci
+
+      - name: Tests
+        run: cd next-version; npm test
+
       - name: Next version
         id: next-version
         uses: symless/actions/next-version@master
