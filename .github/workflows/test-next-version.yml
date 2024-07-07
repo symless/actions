@@ -19,24 +19,24 @@ jobs:
         run: cd next-version; npm test
 
       - name: Next version (defaults)
-        id: next-version-1
+        id: next-version-defaults
         uses: symless/actions/next-version@master
         with:
-          current-version: 1.2.3
+          current-version: 1.2.3-test
 
       - name: Print result (defaults)
-        run: echo "${{ steps.next-version-1.outputs.next-version }}"
+        run: echo "${{ steps.next-version-defaults.outputs.next-version }}"
 
       - name: Next version (options)
-        id: next-version-2
+        id: next-version-options
         uses: symless/actions/next-version@master
         with:
-          current-version: 1.2.3
-          revision-prefix: test-
-          override-stage: test
+          current-version: 1.2.3-test
+          revision-prefix: revision-
+          override-stage: override
 
       - name: Print result (options)
-        run: echo "${{ steps.next-version-2.outputs.next-version }}"
+        run: echo "${{ steps.next-version-options.outputs.next-version }}"
 
       - name: Create release
         id: create_release
@@ -44,8 +44,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ steps.next-version.outputs.next-version }}
-          release_name: ${{ steps.next-version.outputs.next-version }}
+          tag_name: ${{ steps.next-version-options.outputs.next-version }}
+          release_name: ${{ steps.next-version-options.outputs.next-version }}
           commitish: master
           draft: false
           prerelease: true
