@@ -64,17 +64,19 @@ class Version {
      * Parses a valid semver string with at least the major, minor, and patch.
      * The stage and revision are optional.
      */
-    static fromString(versionText, defaultRevisionPrefix) {
+    static fromString(versionText, defaultRevisionPrefix, overrideStage) {
         const semverRe = /(\d+)\.(\d+)\.(\d+)(.*)/;
         const semverMatch = semverRe.exec(versionText);
-        if (semverMatch) {
-            const major = Number.parseInt(semverMatch[1]);
-            const minor = Number.parseInt(semverMatch[2]);
-            const patch = Number.parseInt(semverMatch[3]);
-            const { stage, revision, revisionPrefix } = this.parseExtra(semverMatch[4] || null);
-            return new Version(major, minor, patch, stage, revision, revisionPrefix ?? defaultRevisionPrefix ?? null);
-        }
-        throw new Error(`Invalid version number: ${versionText}`);
+        if (!semverMatch)
+            throw new Error(`Invalid version number: ${versionText}`);
+        const major = Number.parseInt(semverMatch[1]);
+        const minor = Number.parseInt(semverMatch[2]);
+        const patch = Number.parseInt(semverMatch[3]);
+        const extra = this.parseExtra(semverMatch[4] || null);
+        const { stage: parsedStage, revision, revisionPrefix: parsedRevisionPrefix } = extra;
+        const stage = overrideStage ?? parsedStage;
+        const revisionPrefix = parsedRevisionPrefix ?? defaultRevisionPrefix ?? null;
+        return new Version(major, minor, patch, stage, revision, revisionPrefix);
     }
     /**
      * Update the revision number to be unique based on existing tags.
@@ -27003,13 +27005,16 @@ const utils_1 = __nccwpck_require__(4140);
 const Version_1 = __nccwpck_require__(7017);
 const currentVersionKey = "current-version";
 const revisionPrefixKey = "revision-prefix";
+const overrideStageKey = "override-stage";
 const nextVersionKey = "next-version";
 async function main() {
     const currentVersion = process.env.INPUT_CURRENT_VERSION ?? (0, core_1.getInput)(currentVersionKey);
     (0, core_1.debug)(`${currentVersionKey}: ${currentVersion}`);
     const revisionPrefix = process.env.INPUT_REVISION_PREFIX ?? (0, core_1.getInput)(revisionPrefixKey);
     (0, core_1.debug)(`${revisionPrefixKey}: ${revisionPrefix}`);
-    const version = Version_1.Version.fromString(currentVersion, revisionPrefix);
+    const overrideStage = process.env.INPUT_OVERRIDE_STAGE ?? (0, core_1.getInput)(overrideStageKey);
+    (0, core_1.debug)(`${overrideStageKey}: ${overrideStage}`);
+    const version = Version_1.Version.fromString(currentVersion, revisionPrefix, overrideStage);
     version.updateRevision(revisionPrefix);
     const nextVersion = version.toString();
     (0, core_1.debug)(`${nextVersionKey}: ${nextVersion}`);
