@@ -17,7 +17,7 @@ async function main(): Promise<void> {
   const overrideStage = process.env.INPUT_OVERRIDE_STAGE ?? getInput(overrideStageKey);
   debug(`${overrideStageKey}: ${overrideStage}`);
 
-  const version = Version.fromString(currentVersion, revisionPrefix, overrideStage);
+  const version = Version.fromString(currentVersion, revisionPrefix || null, overrideStage || null);
   version.updateRevision(revisionPrefix);
 
   const nextVersion = version.toString();

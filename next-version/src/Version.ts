@@ -68,7 +68,11 @@ export class Version {
    * Parses a valid semver string with at least the major, minor, and patch.
    * The stage and revision are optional.
    */
-  static fromString(versionText: string, defaultRevisionPrefix?: string, overrideStage?: string) {
+  static fromString(
+    versionText: string,
+    defaultRevisionPrefix?: string | null,
+    overrideStage?: string | null,
+  ) {
     const semverRe = /(\d+)\.(\d+)\.(\d+)(.*)/;
     const semverMatch = semverRe.exec(versionText);
     if (!semverMatch) throw new Error(`Invalid version number: ${versionText}`);
