@@ -1,5 +1,7 @@
 # Generate a unique version number
 
+[![Test action](https://github.com/symless/actions/actions/workflows/test-next-version.yml/badge.svg)](https://github.com/symless/actions/actions/workflows/test-next-version.yml)
+
 GitHub custom action to generate a unique version number by appending a revision number, 
 which increments sequentially higher than previous revisions in the Git tag list.
 
