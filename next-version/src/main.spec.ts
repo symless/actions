@@ -16,7 +16,7 @@ describe("main", () => {
     jest.isolateModulesAsync(async () => {
       getInputMock.mockReturnValue("test");
       versionFromStringMock.mockReturnValueOnce({
-        updateBuildNumber: jest.fn(),
+        updateRevision: jest.fn(),
         toString: () => "test",
       } as any);
 
