@@ -23,6 +23,8 @@ jobs:
         uses: symless/actions/next-version@master
         with:
           current-version: 1.2.3
+          revision-prefix: test-
+          override-stage: test
 
       - name: Print result
         run: echo "${{ steps.next-version.outputs.next-version }}"

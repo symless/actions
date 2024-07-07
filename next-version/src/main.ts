@@ -4,6 +4,7 @@ import { Version } from "./Version";
 
 const currentVersionKey = "current-version";
 const revisionPrefixKey = "revision-prefix";
+const overrideStageKey = "override-stage";
 const nextVersionKey = "next-version";
 
 async function main(): Promise<void> {
@@ -13,7 +14,10 @@ async function main(): Promise<void> {
   const revisionPrefix = process.env.INPUT_REVISION_PREFIX ?? getInput(revisionPrefixKey);
   debug(`${revisionPrefixKey}: ${revisionPrefix}`);
 
-  const version = Version.fromString(currentVersion, revisionPrefix);
+  const overrideStage = process.env.INPUT_OVERRIDE_STAGE ?? getInput(overrideStageKey);
+  debug(`${overrideStageKey}: ${overrideStage}`);
+
+  const version = Version.fromString(currentVersion, revisionPrefix, overrideStage);
   version.updateRevision(revisionPrefix);
 
   const nextVersion = version.toString();

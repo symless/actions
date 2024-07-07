@@ -3,12 +3,16 @@ description: "Get the next version number in a Git repo"
 
 inputs:
   current-version:
-    description: "The current version string"
+    description: "Current version string"
     required: true
 
   revision-prefix:
-    description: "The prefix for the revision number, defaults to 'r'"
+    description: "Prefix for the revision number, defaults to 'r'"
     default: "r"
+
+  override-stage:
+    description: "Override the stage"
+    required: false
 
 outputs:
   next-version:
