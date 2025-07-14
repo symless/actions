@@ -1,3 +1,3 @@
 # GitHub actions for Symless
 
-- [next-version](next-version)
+- [get-version](get-version)
