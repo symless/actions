@@ -9,15 +9,7 @@
 # isn't possible due to the lower security context that the CI workflow runs in.
 name: CI comment
 
-on:
-  workflow_dispatch:
-    inputs:
-      test-sha:
-        description: "Test Git SHA for PR to comment on"
-  workflow_run:
-    workflows: ["CI"]
-    types:
-      - completed
+on: workflow_call
 
 jobs:
   merge-comment:
