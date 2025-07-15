@@ -1,7 +1,16 @@
-async function prMergeComment(github, context, inputs = { version, sha }) {
-  if (!github) throw new Error("Arg `github` not defined.");
-  if (!context) throw new Error("Arg `context` not defined.");
+const core = require("@actions/core");
+const github = require("@actions/github");
 
+async function prMergeComment() {
+  const token = core.getInput("github-token") || process.env.GITHUB_TOKEN;
+  const octokit = github.getOctokit(token);
+
+  const inputs = {
+    version: core.getInput("version"),
+    sha: core.getInput("sha"),
+  };
+
+  const { context } = github;
   console.log(context);
 
   const { version } = inputs;
@@ -35,7 +44,7 @@ async function prMergeComment(github, context, inputs = { version, sha }) {
   const runResult = workflowRun?.conclusion || "test";
   const repoUrl = context.payload.repository.html_url;
 
-  const { data: pullRequests } = await github.rest.repos.listPullRequestsAssociatedWithCommit({
+  const { data: pullRequests } = await octokit.rest.repos.listPullRequestsAssociatedWithCommit({
     owner: context.repo.owner,
     repo: context.repo.repo,
     commit_sha: sha,
@@ -60,7 +69,7 @@ async function prMergeComment(github, context, inputs = { version, sha }) {
   }
 
   console.log(`Commenting on first PR: ${prNumber}`);
-  await github.rest.issues.createComment({
+  await octokit.rest.issues.createComment({
     owner: context.repo.owner,
     repo: context.repo.repo,
     issue_number: prNumber,
@@ -68,6 +77,11 @@ async function prMergeComment(github, context, inputs = { version, sha }) {
   });
 }
 
-module.exports = {
-  prMergeComment,
-};
+(async () => {
+  try {
+    await prMergeComment();
+  } catch (error) {
+    console.error(error);
+    core.setFailed(error.message);
+  }
+})();

@@ -2,6 +2,10 @@ name: PR Merge Comment
 description: Adds a comment to a merged PR with the version number.
 
 inputs:
+  github-token:
+    description: GitHub token for authentication
+    required: false
+    default: ${{ github.token }}
   version:
     description: Version to use in the PR comment
     required: true
@@ -10,13 +14,5 @@ inputs:
     required: false
 
 runs:
-  using: composite
-  steps:
-    - name: Comment on merged PR
-      uses: actions/github-script@v7
-      with:
-        script: |
-          const { prMergeComment } = require('./pr-merge-comment/main.js');
-          const version = "${{ inputs.version }}";
-          const sha = "${{ inputs.sha }}";
-          await prMergeComment(github, context, { version, sha });
+  using: node20
+  main: index.js
