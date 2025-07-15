@@ -78,6 +78,6 @@ async function prMergeComment() {
   try {
     await prMergeComment();
   } catch (error) {
-    core.setFailed(error.message);
+    core.setFailed(error);
   }
 })();
