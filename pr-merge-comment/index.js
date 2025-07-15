@@ -1,7 +1,12 @@
 const core = require("@actions/core");
 const github = require("@actions/github");
 
-async function prMergeComment(inputs = { version, sha }) {
+async function prMergeComment() {
+  const inputs = {
+    version: core.getInput("version"),
+    sha: core.getInput("sha"),
+  };
+
   const { context } = github;
   console.log(context);
 
