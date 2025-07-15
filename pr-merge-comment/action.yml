@@ -19,4 +19,4 @@ runs:
           const { prMergeComment } = require('./pr-merge-comment/main.js');
           const version = "${{ inputs.version }}";
           const sha = "${{ inputs.sha }}";
-          await prMergeComment(github, context, version, sha);
+          await prMergeComment(github, context, { version, sha });
