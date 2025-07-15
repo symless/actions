@@ -78,6 +78,7 @@ async function prMergeComment() {
   try {
     await prMergeComment();
   } catch (error) {
-    core.setFailed(error);
+    console.error(error);
+    core.setFailed(error.message);
   }
 })();
