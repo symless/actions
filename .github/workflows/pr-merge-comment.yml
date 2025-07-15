@@ -1,0 +1,21 @@
+name: Test pr-merge-comment Action
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to use in the PR comment"
+        required: true
+        default: "1.0.0"
+
+jobs:
+  test-pr-merge-comment:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Test pr-merge-comment action
+        uses: ./pr-merge-comment
+        with:
+          version: "${{ github.event.inputs.version }}"
