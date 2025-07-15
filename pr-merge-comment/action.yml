@@ -2,6 +2,10 @@ name: PR Merge Comment
 description: Adds a comment to a merged PR with the version number.
 
 inputs:
+  github-token:
+    description: GitHub token for authentication
+    required: false
+    default: ${{ github.token }}
   version:
     description: Version to use in the PR comment
     required: true
