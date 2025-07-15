@@ -10,13 +10,5 @@ inputs:
     required: false
 
 runs:
-  using: composite
-  steps:
-    - name: Comment on merged PR
-      uses: actions/github-script@v7
-      with:
-        script: |
-          const { prMergeComment } = require('./pr-merge-comment/main.js');
-          const version = "${{ inputs.version }}";
-          const sha = "${{ inputs.sha }}";
-          await prMergeComment(github, context, { version, sha });
+  using: node20
+  main: index.js

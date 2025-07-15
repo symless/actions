@@ -1,7 +1,8 @@
-async function prMergeComment(github, context, inputs = { version, sha }) {
-  if (!github) throw new Error("Arg `github` not defined.");
-  if (!context) throw new Error("Arg `context` not defined.");
+const core = require("@actions/core");
+const github = require("@actions/github");
 
+async function prMergeComment(inputs = { version, sha }) {
+  const { context } = github;
   console.log(context);
 
   const { version } = inputs;
@@ -68,6 +69,10 @@ async function prMergeComment(github, context, inputs = { version, sha }) {
   });
 }
 
-module.exports = {
-  prMergeComment,
-};
+(async () => {
+  try {
+    await prMergeComment();
+  } catch (error) {
+    core.setFailed(error.message);
+  }
+})();
