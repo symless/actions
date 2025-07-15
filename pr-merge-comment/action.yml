@@ -5,6 +5,9 @@ inputs:
   version:
     description: Version to use in the PR comment
     required: true
+  sha:
+    description: Optional Git SHA (useful for testing)
+    required: false
 
 runs:
   using: composite
@@ -15,4 +18,5 @@ runs:
         script: |
           const { prMergeComment } = require('./pr-merge-comment/main.js');
           const version = "${{ inputs.version }}";
-          await prMergeComment(github, context, version);
+          const sha = "${{ inputs.sha }}";
+          await prMergeComment(github, context, version, sha);

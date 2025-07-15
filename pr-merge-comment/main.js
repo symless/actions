@@ -1,4 +1,4 @@
-async function prMergeComment(github, context, version) {
+async function prMergeComment(github, context, version, inputSha) {
   if (!github) throw new Error("Arg `github` not defined.");
   if (!context) throw new Error("Arg `context` not defined.");
 
@@ -12,7 +12,7 @@ async function prMergeComment(github, context, version) {
   console.log(`Version: ${version}`);
 
   const workflowRun = context.payload.workflow_run;
-  const sha = context.payload.inputs?.["test-sha"] || workflowRun?.head_sha;
+  const sha = inputSha || workflowRun?.head_sha;
   if (!sha) {
     console.log("No Git SHA found, skipping.");
     return;
