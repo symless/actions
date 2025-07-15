@@ -15,9 +15,9 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # - name: Install action dependencies
-      #   run: npm install
-      #   working-directory: ${{ github.action_path }}
+      - name: Install action dependencies
+        run: npm install
+        working-directory: ${{ github.action_path }}
 
       - name: Test pr-merge-comment action
         uses: ./pr-merge-comment
