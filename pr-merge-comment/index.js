@@ -8,8 +8,6 @@ async function prMergeComment() {
   const inputs = {
     version: core.getInput("version"),
     sha: core.getInput("sha"),
-    testName: core.getInput("test-name") || "test",
-    testConclusion: core.getInput("test-conclusion") || "test",
   };
 
   const { context } = github;
@@ -42,8 +40,8 @@ async function prMergeComment() {
 
   // Either use the run info from the workflow run or the context payload (for testing).
   const runId = workflowRun?.id || context.runId;
-  const runName = workflowRun?.name || inputs.testName;
-  const runConclusion = workflowRun?.conclusion || inputs.testConclusion;
+  const runName = workflowRun?.name || "test";
+  const runResult = workflowRun?.conclusion || "test";
   const repoUrl = context.payload.repository.html_url;
 
   const { data: pullRequests } = await octokit.rest.repos.listPullRequestsAssociatedWithCommit({
@@ -60,7 +58,7 @@ async function prMergeComment() {
   console.log(`Found ${pullRequests.length} PR(s).`);
   const prNumber = pullRequests[0].number;
 
-  const isSuccess = runConclusion === "success";
+  const isSuccess = runResult === "success";
   const resultEmoji = isSuccess ? "✅" : "❌";
   const resultText = isSuccess ? "was successful" : "has failed";
 
@@ -68,7 +66,7 @@ async function prMergeComment() {
   if (runId) {
     console.log(`Appending result and URL for run ID: ${runId}`);
     const runUrl = `${repoUrl}/actions/runs/${runId}`;
-    body += `\nRun: [${runName}](${runUrl})` + `\nConclusion: ${runConclusion}`;
+    body += `\nRun: [${runName}](${runUrl}) (${runConclusion})`;
   } else {
     console.log("No run ID found, skipping run result and URL.");
   }
