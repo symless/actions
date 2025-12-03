@@ -31894,12 +31894,15 @@ async function prMergeComment() {
   console.log(`Found ${pullRequests.length} PR(s).`);
   const prNumber = pullRequests[0].number;
 
-  let body = "Merge build complete.\n" + `Version: \`${version}\``;
+  const isSuccess = runResult === "success";
+  const resultEmoji = isSuccess ? "✅" : "❌";
+  const resultText = isSuccess ? "was successful" : "has failed";
 
+  let body = `${resultEmoji} Merge build ${resultText}.\n` + `Version: \`${version}\``;
   if (runId) {
     console.log(`Appending result and URL for run ID: ${runId}`);
     const runUrl = `${repoUrl}/actions/runs/${runId}`;
-    body += `\nRun: [${runName}](${runUrl}) (${runResult})`;
+    body += `\nRun: [${runName}](${runUrl})`;
   } else {
     console.log("No run ID found, skipping run result and URL.");
   }
