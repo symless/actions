@@ -68,7 +68,7 @@ async function prMergeComment() {
   if (runId) {
     console.log(`Appending result and URL for run ID: ${runId}`);
     const runUrl = `${repoUrl}/actions/runs/${runId}`;
-    body += `\nRun: [${runName}](${runUrl})` + `\nConclusion: ${runConclusion}`;
+    body += `\nRun: [${runName}](${runUrl}) (${runConclusion})`;
   } else {
     console.log("No run ID found, skipping run result and URL.");
   }
