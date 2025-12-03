@@ -8,6 +8,16 @@ on:
         required: true
         default: "1.0.0"
 
+      test-name:
+        description: "Optional test name for the workflow run"
+        required: false
+        default: "test"
+
+      test-conclusion:
+        description: "Optional test conclusion for the workflow run"
+        required: false
+        default: "test"
+
 jobs:
   test-pr-merge-comment:
     runs-on: ubuntu-latest
@@ -20,3 +30,5 @@ jobs:
         with:
           version: "${{ github.event.inputs.version }}"
           sha: "${{ github.sha }}"
+          test-name: "${{ github.event.inputs.test-name }}"
+          test-conclusion: "${{ github.event.inputs.test-conclusion }}"
