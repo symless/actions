@@ -12,6 +12,12 @@ inputs:
   sha:
     description: Optional Git SHA (useful for testing)
     required: false
+  test-name:
+    description: Optional test name (useful for testing)
+    required: false
+  test-conclusion:
+    description: Optional test conclusion (useful for testing)
+    required: false
 
 runs:
   using: node20

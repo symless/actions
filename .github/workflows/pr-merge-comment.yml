@@ -9,12 +9,12 @@ on:
         default: "1.0.0"
 
       test-name:
-        description: "Optional test name for the workflow run"
+        description: "Optional test name"
         required: false
         default: "test"
 
       test-conclusion:
-        description: "Optional test conclusion for the workflow run"
+        description: "Optional test conclusion"
         required: false
         default: "test"
 
