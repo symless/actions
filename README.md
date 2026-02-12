@@ -14,14 +14,38 @@ workflow run status.
 
 ## [setup-matrix](setup-matrix)
 
-Load a YAML matrix file and optionally filter to a single target. Validates that the file exists,
-has a non-empty `target` array, and each entry has `name` and `runs-on`.
+Load a YAML matrix file and optionally filter to a single target. GitHub Actions has `fromJSON()`
+but no `fromYAML()`, so this action converts the YAML to JSON. It also validates that the file
+exists, has a non-empty `target` array, and each entry has `name` and `runs-on`.
 
 ```yaml
-- name: Setup matrix
-  id: setup-matrix
-  uses: symless/actions/setup-matrix@v1
-  with:
-    file: .github/matrix.yml # default
-    target: ubuntu-24.04-x86_64 # optional, filters to one target
+# .github/matrix.yml
+target:
+  - name: ubuntu-24.04-x86_64
+    runs-on: ubuntu-24.04
+  - name: macos-15-arm64
+    runs-on: macos-15
+```
+
+```yaml
+jobs:
+  setup-matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.setup-matrix.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: symless/actions/setup-matrix@v1
+        id: setup-matrix
+        with:
+          file: .github/matrix.yml # default
+          target: ubuntu-24.04-x86_64 # optional, filters to one target
+
+  build:
+    needs: setup-matrix
+    strategy:
+      matrix: ${{ fromJSON(needs.setup-matrix.outputs.matrix) }}
+    runs-on: ${{ matrix.target.runs-on }}
+    steps:
+      - run: echo "${{ matrix.target.name }}"
 ```
