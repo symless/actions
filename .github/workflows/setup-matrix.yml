@@ -1,0 +1,43 @@
+name: Test setup-matrix
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: "Only include the target with this name"
+        required: false
+
+jobs:
+  setup-matrix:
+    runs-on: ubuntu-latest
+
+    outputs:
+      matrix: ${{ steps.setup-matrix.outputs.matrix }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup matrix
+        id: setup-matrix
+        uses: ./setup-matrix
+        with:
+          file: setup-matrix/test-matrix.yml
+          target: "${{ github.event.inputs.target }}"
+
+  test:
+    needs: setup-matrix
+
+    strategy:
+      matrix: ${{ fromJSON(needs.setup-matrix.outputs.matrix) }}
+
+    runs-on: ${{ matrix.target.runs-on }}
+
+    steps:
+      - name: Print target
+        run: |
+          echo "name: ${{ matrix.target.name }}"
+          echo "runs-on: ${{ matrix.target.runs-on }}"
+          echo "flat-field: ${{ matrix.target.flat-field }}"
+          echo "nested.key: ${{ matrix.target.nested.key }}"
+          echo "nested.deep.another: ${{ matrix.target.nested.deep.another }}"

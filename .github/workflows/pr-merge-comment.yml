@@ -1,4 +1,4 @@
-name: Test pr-merge-comment Action
+name: Test pr-merge-comment
 
 on:
   workflow_dispatch:
