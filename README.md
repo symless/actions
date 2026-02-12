@@ -19,6 +19,10 @@ before each action in the job. This action solves that by filtering the matrix u
 for example, use a workflow dispatch input to run only a single target. This action lets you define
 your matrix once in a YAML file exactly how you would in the workflow.
 
+This is useful when QA or another department needs a specific platform build and running the full
+matrix is expensive. It's less relevant for open source projects where runners are free and there's
+no QA department.
+
 ```yaml
 # .github/matrix.yml
 target:
