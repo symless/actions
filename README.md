@@ -14,9 +14,10 @@ workflow run status.
 
 ## [setup-matrix](setup-matrix)
 
-Load a YAML matrix file and optionally filter to a single target. GitHub Actions has `fromJSON()`
-but no `fromYAML()`, so this action converts the YAML to JSON. It also validates that the file
-exists, has a non-empty `target` array, and each entry has `name` and `runs-on`.
+Conditionally skipping matrix entries in GitHub Actions is tedious — you'd need to add a skip step
+before each action in the job. This action solves that by filtering the matrix up front, so you can
+for example, use a workflow dispatch input to run only a single target. This action lets you define
+your matrix once in a YAML file exactly how you would in the workflow.
 
 ```yaml
 # .github/matrix.yml
