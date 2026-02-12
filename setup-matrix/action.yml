@@ -1,0 +1,60 @@
+name: Setup Matrix
+description: Load a YAML matrix file and optionally filter to a single target.
+
+inputs:
+  file:
+    description: Path to the YAML matrix file
+    required: false
+    default: .github/matrix.yml
+  target:
+    description: Only include the target with this name
+    required: false
+
+outputs:
+  matrix:
+    description: JSON matrix for use with fromJSON()
+    value: ${{ steps.set-matrix.outputs.matrix }}
+
+runs:
+  using: composite
+  steps:
+    # GitHub Actions has fromJSON() but no fromYAML(), so we convert to JSON.
+    # This also lets us use jq for validation and filtering.
+    - name: Set matrix
+      id: set-matrix
+      shell: bash
+      run: |
+        file="${{ inputs.file }}"
+
+        if [ ! -f "$file" ]; then
+          echo "::error::$file not found"
+          exit 1
+        fi
+
+        matrix=$(yq -o=json -c . "$file")
+
+        count=$(echo "$matrix" | jq '.target | length')
+        if [ -z "$count" ] || [ "$count" -eq 0 ]; then
+          echo "::error::$file must have a non-empty 'target' array"
+          exit 1
+        fi
+
+        bad=$(echo "$matrix" | jq '[.target[] | select(.name == null or .["runs-on"] == null)] | length')
+        if [ "$bad" -gt 0 ]; then
+          echo "::error::$bad target(s) in $file missing required fields (name, runs-on)"
+          exit 1
+        fi
+
+        target="${{ inputs.target }}"
+        if [ -n "$target" ]; then
+          matrix=$(echo "$matrix" | jq -c --arg t "$target" '{target: [.target[] | select(.name == $t)]}')
+
+          if [ "$(echo "$matrix" | jq '.target | length')" -eq 0 ]; then
+            echo "::error::Target '$target' not found in $file"
+            echo "Available targets:"
+            yq -r '.target[].name' "$file"
+            exit 1
+          fi
+        fi
+
+        echo "matrix=$matrix" >> $GITHUB_OUTPUT

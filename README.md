@@ -11,3 +11,17 @@ workflow run status.
   with:
     version: ${{ steps.get-version.outputs.version }}
 ```
+
+## [setup-matrix](setup-matrix)
+
+Load a YAML matrix file and optionally filter to a single target. Validates that the file exists,
+has a non-empty `target` array, and each entry has `name` and `runs-on`.
+
+```yaml
+- name: Setup matrix
+  id: setup-matrix
+  uses: symless/actions/setup-matrix@v1
+  with:
+    file: .github/matrix.yml # default
+    target: ubuntu-24.04-x86_64 # optional, filters to one target
+```

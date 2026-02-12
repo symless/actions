@@ -1,0 +1,30 @@
+name: Test setup-matrix Action
+
+on:
+  workflow_dispatch:
+    inputs:
+      file:
+        description: "Path to the YAML matrix file"
+        required: false
+        default: ".github/matrix.yml"
+
+      target:
+        description: "Only include the target with this name"
+        required: false
+
+jobs:
+  test-setup-matrix:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Test setup-matrix action
+        id: setup-matrix
+        uses: ./setup-matrix
+        with:
+          file: "${{ github.event.inputs.file }}"
+          target: "${{ github.event.inputs.target }}"
+
+      - name: Print matrix
+        run: echo '${{ steps.setup-matrix.outputs.matrix }}' | jq .
