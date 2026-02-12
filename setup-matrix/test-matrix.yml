@@ -1,0 +1,11 @@
+target:
+  - name: test-flat
+    runs-on: ubuntu-latest
+    flat-field: hello
+
+  - name: test-nested
+    runs-on: ubuntu-latest
+    nested:
+      key: value
+      deep:
+        another: level

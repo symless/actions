@@ -1,30 +1,43 @@
-name: Test setup-matrix Action
+name: Test setup-matrix
 
 on:
   workflow_dispatch:
     inputs:
-      file:
-        description: "Path to the YAML matrix file"
-        required: false
-        default: ".github/matrix.yml"
-
       target:
         description: "Only include the target with this name"
         required: false
 
 jobs:
-  test-setup-matrix:
+  setup-matrix:
     runs-on: ubuntu-latest
+
+    outputs:
+      matrix: ${{ steps.setup-matrix.outputs.matrix }}
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Test setup-matrix action
+      - name: Setup matrix
         id: setup-matrix
         uses: ./setup-matrix
         with:
-          file: "${{ github.event.inputs.file }}"
+          file: setup-matrix/test-matrix.yml
           target: "${{ github.event.inputs.target }}"
 
-      - name: Print matrix
-        run: echo '${{ steps.setup-matrix.outputs.matrix }}' | jq .
+  test:
+    needs: setup-matrix
+
+    strategy:
+      matrix: ${{ fromJSON(needs.setup-matrix.outputs.matrix) }}
+
+    runs-on: ${{ matrix.target.runs-on }}
+
+    steps:
+      - name: Print target
+        run: |
+          echo "name: ${{ matrix.target.name }}"
+          echo "runs-on: ${{ matrix.target.runs-on }}"
+          echo "flat-field: ${{ matrix.target.flat-field }}"
+          echo "nested.key: ${{ matrix.target.nested.key }}"
+          echo "nested.deep.another: ${{ matrix.target.nested.deep.another }}"
